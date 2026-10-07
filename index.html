@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Dépannage & Support LAN</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛠️</text></svg>">
     <style>
         :root {
             --bg-color: #0f172a;
@@ -16,6 +17,8 @@
             --accent-green-hover: #047857;
             --accent-purple: #7c3aed;
             --accent-purple-hover: #6d28d9;
+            --accent-orange: #ea580c;
+            --accent-orange-hover: #c2410c;
             --border-color: #334155;
             --code-bg: #090d16;
         }
@@ -29,7 +32,7 @@
         p.subtitle { color: var(--text-muted); font-size: 0.95rem; }
 
         /* Navigation Onglets */
-        .tabs { display: flex; gap: 0.5rem; border-bottom: 2px solid var(--border-color); margin-bottom: 1.5rem; }
+        .tabs { display: flex; gap: 0.5rem; border-bottom: 2px solid var(--border-color); margin-bottom: 1.5rem; flex-wrap: wrap; }
         .tab-btn { background: none; border: none; color: var(--text-muted); padding: 0.75rem 1.25rem; font-weight: 600; font-size: 0.95rem; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: 0.2s; }
         .tab-btn:hover { color: var(--text-main); }
         .tab-btn.active { color: #38bdf8; border-bottom-color: #38bdf8; }
@@ -51,20 +54,33 @@
         .btn-msra:hover { background: var(--accent-green-hover); }
         .btn-reg { background: var(--accent-purple); color: white; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.25rem; font-size: 0.95rem; margin-top: 0.5rem; width: auto; }
         .btn-reg:hover { background: var(--accent-purple-hover); }
+        .btn-copy { background: var(--accent-blue); color: white; padding: 0.4rem 0.75rem; font-size: 0.8rem; width: auto; margin-left: auto; }
+        .btn-copy:hover { background: var(--accent-blue-hover); }
+        .btn-copy.copied { background: var(--accent-green); }
 
         /* Guide Section */
         .guide-section { background: var(--card-bg); border-radius: 8px; padding: 1.5rem; border: 1px solid var(--border-color); margin-bottom: 1.5rem; }
-        .guide-section h2 { font-size: 1.2rem; color: #f1f5f9; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+        .guide-section h2 { font-size: 1.2rem; color: #f1f5f9; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
         .guide-section p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1rem; }
         
-        pre { background: var(--code-bg); padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid var(--border-color); font-family: monospace; font-size: 0.85rem; color: #a7f3d0; overflow-x: auto; margin-bottom: 1rem; }
+        .code-header { display: flex; align-items: center; justify-content: space-between; background: #111827; padding: 0.5rem 0.75rem 0.5rem 1rem; border-radius: 6px 6px 0 0; border: 1px solid var(--border-color); border-bottom: none; margin-top: 0.5rem; }
+        .code-header span { font-size: 0.8rem; color: var(--text-muted); font-family: monospace; }
+        pre { background: var(--code-bg); padding: 0.75rem 1rem; border-radius: 0 0 6px 6px; border: 1px solid var(--border-color); font-family: 'Courier New', monospace; font-size: 0.82rem; color: #a7f3d0; overflow-x: auto; margin-bottom: 1rem; line-height: 1.5; white-space: pre; }
         ol, ul { margin-left: 1.25rem; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem; }
         li strong { color: var(--text-main); }
         code { background: rgba(148, 163, 184, 0.15); padding: 0.15rem 0.4rem; border-radius: 3px; font-family: monospace; font-size: 0.85rem; color: #e2e8f0; }
+        a { color: #38bdf8; }
+
+        .badge { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 4px; margin-left: 0.5rem; vertical-align: middle; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-required { background: rgba(234, 88, 12, 0.2); color: #fb923c; border: 1px solid rgba(234, 88, 12, 0.4); }
+        .badge-optional { background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid var(--border-color); }
+        .badge-diagnostic { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
 
         /* Toast notification */
-        #toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(120%); background: var(--accent-green); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: transform 0.35s ease; z-index: 9999; }
+        #toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(120%); background: var(--accent-green); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: transform 0.35s ease; z-index: 9999; max-width: 90vw; text-align: center; }
         #toast.show { transform: translateX(-50%) translateY(0); }
+
+        .step-num { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-blue); color: white; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -88,44 +104,170 @@
     <!-- ONGLET 2 : CONFIGURATION -->
     <div id="config" class="tab-content">
         
-        <!-- STEP 1 -->
+        <!-- STEP 1 : MSRA reg -->
         <div class="guide-section">
-            <h2>1. Configuration de votre PC d'administration (MSRA)</h2>
-            <p>Pour que le bouton <strong>Assister le collègue (MSRA)</strong> fonctionne depuis votre navigateur, vous devez déclarer le protocole <code>msra://</code> dans le registre de votre PC personnel/portatif.</p>
+            <h2><span class="step-num">1</span> Configuration du PC d'administration <span class="badge badge-required">Requis</span></h2>
+            <p>Pour que le bouton <strong>Assister le collègue (MSRA)</strong> fonctionne depuis ton navigateur, tu dois déclarer le protocole <code>msra://</code> dans le registre de <strong>ton PC admin</strong>.</p>
             <button class="btn btn-reg" onclick="downloadMsraRegFile()">
                 📥 Télécharger installer_protocole_msra.reg
             </button>
-            <p style="margin-top:0.75rem; font-size:0.85rem;"><em>Note : Après le téléchargement, double-cliquez sur le fichier <code>.reg</code> et acceptez la fusion dans le registre.</em></p>
+            <p style="margin-top:0.75rem; font-size:0.85rem;"><em>Après le téléchargement : double-clic sur le fichier → accepter la fusion dans le registre → redémarrer le navigateur.</em></p>
         </div>
 
-        <!-- STEP 1bis -->
+        <!-- STEP 2 : RDP reg (optionnel) -->
         <div class="guide-section">
-            <h2>1bis. (Optionnel) Protocole <code>rdp://</code></h2>
-            <p>Le bouton <strong>Prise en main (RDP)</strong> télécharge un fichier <code>.rdp</code> qui s'ouvre automatiquement avec <em>mstsc.exe</em> — <strong>aucune configuration requise</strong>. Cette méthode est la plus fiable.</p>
-            <p>Si tu veux néanmoins un vrai lien <code>rdp://</code> (comme pour MSRA), télécharge et fusionne ce second fichier <code>.reg</code> sur le PC d'administration.</p>
+            <h2><span class="step-num">2</span> Protocole <code>rdp://</code> <span class="badge badge-optional">Optionnel</span></h2>
+            <p>Le bouton <strong>Prise en main (RDP)</strong> télécharge un fichier <code>.rdp</code> qui s'ouvre automatiquement avec <em>mstsc.exe</em> — <strong>aucune configuration requise</strong>, c'est la méthode la plus fiable.</p>
+            <p>Si tu veux néanmoins un vrai lien <code>rdp://</code> (comme pour MSRA), fusionne ce second fichier <code>.reg</code> sur le PC d'administration.</p>
             <button class="btn btn-reg" onclick="downloadRdpRegFile()">
                 📥 Télécharger installer_protocole_rdp.reg
             </button>
         </div>
 
-        <!-- STEP 2 -->
+        <!-- STEP 3 : Script activation cible -->
         <div class="guide-section">
-            <h2>2. Activer RDP & MSRA sur les PC à dépanner</h2>
-            <p>Exécutez cette commande unique dans <strong>PowerShell en tant qu'administrateur</strong> sur les machines cibles pour activer le Bureau à distance et l'Assistance à distance en une seule fois :</p>
-            <pre># Activer RDP et l'Assistance à distance (MSRA)
+            <h2><span class="step-num">3</span> Activer RDP & MSRA sur les PC cibles <span class="badge badge-required">Requis</span></h2>
+            <p>Exécute ce script dans <strong>PowerShell en tant qu'administrateur</strong> sur chaque machine à dépanner. Il active RDP, MSRA, le pare-feu et force le démarrage du service.</p>
+            <div class="code-header">
+                <span>Activation_RDP_MSRA.ps1</span>
+                <button class="btn btn-copy" onclick="copyCode(this, 'code-activate')">📋 Copier</button>
+            </div>
+            <pre id="code-activate"># ============================================
+# Activation RDP + Assistance à distance (MSRA)
+# À exécuter en PowerShell ADMIN sur le PC cible
+# ============================================
+
+# 1. Activer le Bureau à distance et l'Assistance à distance
 Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
 Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fAllowToGetHelp" -Value 1
+
+# 2. Activer les règles de pare-feu
 Enable-NetFirewallRule -DisplayGroup "Bureau à distance"
-Enable-NetFirewallRule -DisplayGroup "Assistance à distance"</pre>
+Enable-NetFirewallRule -DisplayGroup "Assistance à distance"
+
+# 3. Forcer le démarrage du service Terminal Server
+Set-Service TermService -StartupType Automatic
+Start-Service TermService
+
+# 4. Vérification rapide
+Write-Host ""
+Write-Host "=== Vérifications ===" -ForegroundColor Cyan
+$ts = Get-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server'
+Write-Host "fDenyTSConnections : $($ts.fDenyTSConnections) (attendu: 0)"
+Write-Host "fAllowToGetHelp    : $($ts.fAllowToGetHelp) (attendu: 1)"
+Write-Host "TermService        : $((Get-Service TermService).Status) (attendu: Running)"
+$port = netstat -an | Select-String ":3389.*LISTENING"
+if ($port) { Write-Host "Port 3389          : EN ÉCOUTE ✅" -ForegroundColor Green }
+else       { Write-Host "Port 3389          : FERMÉ ❌ (redémarre la machine)" -ForegroundColor Red }
+
+Write-Host ""
+Write-Host "➡️  Redémarre la machine pour finaliser l'activation." -ForegroundColor Yellow</pre>
         </div>
 
-        <!-- STEP 3 -->
+        <!-- STEP 4 : Diagnostic -->
         <div class="guide-section">
-            <h2>3. Comment ça marche ?</h2>
+            <h2><span class="step-num">4</span> Diagnostic RDP <span class="badge badge-diagnostic">Dépannage</span></h2>
+            <p>Si RDP ne fonctionne pas malgré l'activation, lance ce script sur le PC cible pour identifier le problème.</p>
+            <div class="code-header">
+                <span>Diagnostic_RDP.ps1</span>
+                <button class="btn btn-copy" onclick="copyCode(this, 'code-diag')">📋 Copier</button>
+            </div>
+            <pre id="code-diag"># ============================================
+# Diagnostic complet de l'état RDP
+# À exécuter en PowerShell ADMIN sur le PC cible
+# ============================================
+
+Write-Host "=== Diagnostic RDP ===" -ForegroundColor Cyan
+
+# 1. Registre
+$ts = Get-ItemProperty 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -ErrorAction SilentlyContinue
+Write-Host "fDenyTSConnections : $($ts.fDenyTSConnections) (attendu: 0)"
+Write-Host "fAllowToGetHelp    : $($ts.fAllowToGetHelp) (attendu: 1)"
+
+# 2. Service
+$svc = Get-Service TermService -ErrorAction SilentlyContinue
+if ($svc) { Write-Host "TermService        : $($svc.Status) / $($svc.StartType)" }
+else      { Write-Host "TermService        : INTROUVABLE ❌" -ForegroundColor Red }
+
+# 3. Port 3389
+$port = netstat -an | Select-String ":3389.*LISTENING"
+if ($port) { Write-Host "Port 3389          : EN ÉCOUTE ✅" -ForegroundColor Green }
+else       { Write-Host "Port 3389          : FERMÉ ❌"      -ForegroundColor Red }
+
+# 4. Pare-feu
+$fw = Get-NetFirewallRule -DisplayGroup "Bureau à distance" -ErrorAction SilentlyContinue |
+      Where-Object { $_.Enabled -eq 'True' }
+Write-Host "Règles pare-feu    : $($fw.Count) active(s)"
+
+# 5. Info système
+Write-Host ""
+Write-Host "=== Système ===" -ForegroundColor Cyan
+Write-Host "Hostname           : $env:COMPUTERNAME"
+Write-Host "IP locale          : $((Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notlike '127.*' } | Select-Object -First 1).IPAddress)"
+Write-Host "Utilisateur        : $env:USERNAME"
+
+Write-Host ""
+Write-Host "Si tout est vert mais que la connexion échoue → redémarre." -ForegroundColor Yellow</pre>
+        </div>
+
+        <!-- STEP 5 : Test depuis PC admin -->
+        <div class="guide-section">
+            <h2><span class="step-num">5</span> Test depuis le PC admin <span class="badge badge-diagnostic">Dépannage</span></h2>
+            <p>Lance ce test <strong>depuis ton PC d'administration</strong> (remplace l'IP si besoin).</p>
+            <div class="code-header">
+                <span>Test_Depuis_Admin.ps1</span>
+                <button class="btn btn-copy" onclick="copyCode(this, 'code-test')">📋 Copier</button>
+            </div>
+            <pre id="code-test"># ============================================
+# Test de connectivité vers un PC cible
+# À exécuter depuis le PC d'administration
+# ============================================
+
+$target = "192.168.0.8"   # ← Modifie l'IP ici
+
+Write-Host "=== Test vers $target ===" -ForegroundColor Cyan
+
+# 1. Ping
+Write-Host "`n[1] Ping..."
+if (Test-Connection -ComputerName $target -Count 2 -Quiet) {
+    Write-Host "    ✅ La machine répond au ping" -ForegroundColor Green
+} else {
+    Write-Host "    ❌ Pas de réponse au ping (pare-feu ou machine éteinte)" -ForegroundColor Red
+}
+
+# 2. Port RDP 3389
+Write-Host "`n[2] Port RDP 3389..."
+$rdp = Test-NetConnection -ComputerName $target -Port 3389 -WarningAction SilentlyContinue
+if ($rdp.TcpTestSucceeded) {
+    Write-Host "    ✅ Port 3389 ouvert → RDP devrait marcher" -ForegroundColor Green
+} else {
+    Write-Host "    ❌ Port 3389 fermé → vérifier activation RDP + pare-feu" -ForegroundColor Red
+}
+
+# 3. Port MSRA 135 (RPC)
+Write-Host "`n[3] Port RPC 135 (nécessaire pour MSRA)..."
+$rpc = Test-NetConnection -ComputerName $target -Port 135 -WarningAction SilentlyContinue
+if ($rpc.TcpTestSucceeded) {
+    Write-Host "    ✅ Port 135 ouvert → MSRA devrait marcher" -ForegroundColor Green
+} else {
+    Write-Host "    ❌ Port 135 fermé → vérifier activation MSRA + pare-feu" -ForegroundColor Red
+}
+
+Write-Host ""
+Write-Host "=== Interprétation ===" -ForegroundColor Cyan
+Write-Host "Ping KO          → machine éteinte ou sur un autre réseau"
+Write-Host "Ping OK / RDP KO → lancer le script d'activation + redémarrer le PC cible"
+Write-Host "Tout OK          → lancer la connexion depuis le dashboard"</pre>
+        </div>
+
+        <!-- STEP 6 : Explication -->
+        <div class="guide-section">
+            <h2><span class="step-num">6</span> Comment ça marche ?</h2>
             <ul>
-                <li><strong>Prise en main (RDP) :</strong> Télécharge un fichier <code>.rdp</code> → Windows ouvre une session complète via <em>mstsc.exe</em>. Idéal pour travailler sur le PC quand personne n'est devant (verrouille l'écran distant).</li>
-                <li><strong>Assister le collègue (MSRA) :</strong> Envoie une notification sur l'écran du collègue. Il clique sur <em>Autoriser</em> pour que vous puissiez voir son écran et l'aider sans lui couper sa session.</li>
+                <li><strong>Prise en main (RDP) :</strong> télécharge un fichier <code>.rdp</code> → Windows ouvre une session complète via <em>mstsc.exe</em>. Idéal quand personne n'est devant le PC (verrouille l'écran distant).</li>
+                <li><strong>Assister le collègue (MSRA) :</strong> envoie une notification sur l'écran du collègue. Il clique sur <em>Autoriser</em> pour que tu puisses voir son écran et l'aider <strong>sans lui couper sa session</strong>.</li>
             </ul>
+            <p style="margin-bottom:0;"><strong>Astuce :</strong> après avoir modifié le fichier <code>.reg</code> MSRA, pense à le re-fusionner sur ton PC admin (double-clic → Oui) sinon l'ancienne version reste active.</p>
         </div>
 
     </div>
@@ -135,17 +277,17 @@ Enable-NetFirewallRule -DisplayGroup "Assistance à distance"</pre>
 
 <script>
     // ============================================================
-    // LISTE DES MACHINES — Modifiez les IP et Noms selon votre LAN
+    // LISTE DES MACHINES — Modifie les IP et Noms selon ton LAN
     // ============================================================
     const machines = [
-        { name: "POSTE8 : Comptoir 0",        ip: "192.168.0.8"   },
-        { name: "POSTE6 : Reception Commande", ip: "192.168.0.6"   },
-        { name: "POSTE5 : Comptoir 4",        ip: "192.168.0.5"   },
-        { name: "POSTE4 : Comptoir 3",        ip: "192.168.0.4"   },
-        { name: "POSTE3 : Comptoir 2",        ip: "192.168.0.3"   },
-        { name: "POSTE2 : Comptoir 1",        ip: "192.168.0.2"   },
-        { name: "PC PDA : Robotikdose",       ip: "192.168.0.229" },
-        { name: "PC Bureau Titulaire",        ip: "192.168.0.18"  }
+        { name: "POSTE8 : Comptoir 0",          ip: "192.168.0.8"   },
+        { name: "POSTE6 : Reception Commande",  ip: "192.168.0.6"   },
+        { name: "POSTE5 : Comptoir 4",          ip: "192.168.0.5"   },
+        { name: "POSTE4 : Comptoir 3",          ip: "192.168.0.4"   },
+        { name: "POSTE3 : Comptoir 2",          ip: "192.168.0.3"   },
+        { name: "POSTE2 : Comptoir 1",          ip: "192.168.0.2"   },
+        { name: "PC PDA : Robotikdose",         ip: "192.168.0.229" },
+        { name: "PC Bureau Titulaire",          ip: "192.168.0.18"  }
     ];
 
     // ============================================================
@@ -235,6 +377,7 @@ Enable-NetFirewallRule -DisplayGroup "Assistance à distance"</pre>
         setTimeout(() => URL.revokeObjectURL(url), 2000);
     }
 
+    // MSRA : /offerRA (et NON /offeringassist qui n'existe pas)
     function downloadMsraRegFile() {
         const regContent = `Windows Registry Editor Version 5.00
 
@@ -247,12 +390,13 @@ Enable-NetFirewallRule -DisplayGroup "Assistance à distance"</pre>
 [HKEY_CLASSES_ROOT\\msra\\shell\\open]
 
 [HKEY_CLASSES_ROOT\\msra\\shell\\open\\command]
-@="powershell.exe -WindowStyle Hidden -Command \\"$ip = '%1' -replace 'msra://','' -replace '/',''; Start-Process msra.exe -ArgumentList '/offeringassist', $ip\\""`;
+@="powershell.exe -WindowStyle Hidden -Command \\"$ip = '%1' -replace 'msra://','' -replace '/',''; Start-Process msra.exe -ArgumentList '/offerRA', $ip\\""`;
 
         triggerDownload(regContent, 'installer_protocole_msra.reg');
         showToast('✅ Fichier msra.reg téléchargé — double-clic pour fusionner');
     }
 
+    // RDP : /v:<ip> avec mstsc.exe
     function downloadRdpRegFile() {
         const regContent = `Windows Registry Editor Version 5.00
 
@@ -272,7 +416,44 @@ Enable-NetFirewallRule -DisplayGroup "Assistance à distance"</pre>
     }
 
     // ============================================================
-    // TOAST (notification bas d'écran)
+    // COPIE DE CODE
+    // ============================================================
+    function copyCode(btn, elementId) {
+        const pre = document.getElementById(elementId);
+        const text = pre.innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            const original = btn.textContent;
+            btn.textContent = '✅ Copié !';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.textContent = original;
+                btn.classList.remove('copied');
+            }, 2000);
+        }).catch(err => {
+            // Fallback pour navigateurs sans clipboard API (http, etc.)
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                btn.textContent = '✅ Copié !';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = original;
+                    btn.classList.remove('copied');
+                }, 2000);
+            } catch (e) {
+                alert('Copie impossible — sélectionne le texte manuellement.');
+            }
+            document.body.removeChild(textarea);
+        });
+    }
+
+    // ============================================================
+    // TOAST
     // ============================================================
     let toastTimeout = null;
     function showToast(message) {
