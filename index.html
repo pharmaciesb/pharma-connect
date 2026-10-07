@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Dépannage & Support LAN</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #0284c7;
+            --accent-blue-hover: #0369a1;
+            --accent-green: #059669;
+            --accent-green-hover: #047857;
+            --accent-purple: #7c3aed;
+            --border-color: #334155;
+            --code-bg: #090d16;
+        }
+
+        * { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; }
+        body { background: var(--bg-color); color: var(--text-main); padding: 2rem 1rem; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 900px; }
+
+        header { margin-bottom: 1.5rem; text-align: center; }
+        h1 { color: #38bdf8; font-size: 1.8rem; margin-bottom: 0.5rem; }
+        p.subtitle { color: var(--text-muted); font-size: 0.95rem; }
+
+        /* Navigation Onglets */
+        .tabs { display: flex; gap: 0.5rem; border-bottom: 2px solid var(--border-color); margin-bottom: 1.5rem; }
+        .tab-btn { background: none; border: none; color: var(--text-muted); padding: 0.75rem 1.25rem; font-weight: 600; font-size: 0.95rem; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: 0.2s; }
+        .tab-btn:hover { color: var(--text-main); }
+        .tab-btn.active { color: #38bdf8; border-bottom-color: #38bdf8; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Dashboard Grid */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem; }
+        .card { background: var(--card-bg); border-radius: 8px; padding: 1.25rem; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; }
+        .card h3 { margin-bottom: 0.25rem; font-size: 1.1rem; }
+        .ip { font-family: 'Courier New', Courier, monospace; color: #38bdf8; font-size: 0.9rem; margin-bottom: 1rem; background: rgba(56, 189, 248, 0.1); display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; }
+        .actions { display: flex; gap: 0.5rem; flex-direction: column; }
+        
+        .btn { display: inline-block; text-align: center; padding: 0.65rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: 0.2s; border: none; }
+        .btn-rdp { background: var(--accent-blue); color: white; }
+        .btn-rdp:hover { background: var(--accent-blue-hover); }
+        .btn-msra { background: var(--accent-green); color: white; }
+        .btn-msra:hover { background: var(--accent-green-hover); }
+        .btn-reg { background: var(--accent-purple); color: white; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; font-size: 0.95rem; margin-top: 0.5rem; }
+
+        /* Guide Section */
+        .guide-section { background: var(--card-bg); border-radius: 8px; padding: 1.5rem; border: 1px solid var(--border-color); margin-bottom: 1.5rem; }
+        .guide-section h2 { font-size: 1.2rem; color: #f1f5f9; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+        .guide-section p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 1rem; }
+        
+        pre { background: var(--code-bg); padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid var(--border-color); font-family: monospace; font-size: 0.85rem; color: #a7f3d0; overflow-x: auto; margin-bottom: 1rem; }
+        ol, ul { margin-left: 1.25rem; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem; }
+        li strong { color: var(--text-main); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Dépannage & Support LAN</h1>
+        <p class="subtitle">Prise en main à distance ultra-rapide (RDP & MSRA)</p>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('dashboard')">💻 Postes de travail</button>
+        <button class="tab-btn" onclick="switchTab('config')">⚙️ Guide & Configuration</button>
+    </div>
+
+    <!-- ONGLET 1 : DASHBOARD -->
+    <div id="dashboard" class="tab-content active">
+        <div class="grid" id="pc-list"></div>
+    </div>
+
+    <!-- ONGLET 2 : CONFIGURATION -->
+    <div id="config" class="tab-content">
+        
+        <!-- STEP 1 -->
+        <div class="guide-section">
+            <h2>1. Configuration de votre PC d'administration</h2>
+            <p>Pour que le bouton <strong>Assister le collègue (MSRA)</strong> fonctionne depuis votre navigateur, vous devez déclarer le protocole <code>msra://</code> dans le registre de votre PC personnel/portatif.</p>
+            <button class="btn btn-reg" onclick="downloadRegFile()">
+                📥 Télécharger le fichier installer_protocole_msra.reg
+            </button>
+            <p style="margin-top:0.75rem; font-size:0.85rem;"><em>Note : Après le téléchargement, double-cliquez sur le fichier <code>.reg</code> et acceptez la fusion dans le registre.</em></p>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="guide-section">
+            <h2>2. Activer RDP & MSRA sur les PC à dépanner</h2>
+            <p>Exécutez cette commande unique dans <strong>PowerShell en tant qu'administrateur</strong> sur les machines cibles pour activer le Bureau à distance et l'Assistance à distance en une seule fois :</p>
+            <pre># Activer RDP et l'Assistance à distance (MSRA)
+Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
+Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fAllowToGetHelp" -Value 1
+Enable-NetFirewallRule -DisplayGroup "Bureau à distance"
+Enable-NetFirewallRule -DisplayGroup "Assistance à distance"</pre>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="guide-section">
+            <h2>3. Comment ça marche ?</h2>
+            <ul>
+                <li><strong>Prise en main (RDP) :</strong> Ouvre une session complète. Idéal pour travailler sur le PC quand personne n'est devant (verrouille l'écran distant).</li>
+                <li><strong>Assister le collègue (MSRA) :</strong> Envoie une notification sur l'écran du collègue. Il clique sur <em>Autoriser</em> pour que vous puissiez voir son écran et l'aider sans lui couper sa session.</li>
+            </ul>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // LISTE DES MACHINES (Modifiez les IP et Noms selon votre réseau local)
+    const machines = [
+        { name: "PC Compta / Caisse 1", ip: "192.168.1.10" },
+        { name: "PC Comptoir / Caisse 2", ip: "192.168.1.11" },
+        { name: "PC Robot / Automate", ip: "192.168.1.12" },
+        { name: "PC Bureau Titulaire", ip: "192.168.1.13" }
+    ];
+
+    // Génération automatique des cartes
+    const container = document.getElementById('pc-list');
+    machines.forEach(pc => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+            <div>
+                <h3>${pc.name}</h3>
+                <span class="ip">${pc.ip}</span>
+            </div>
+            <div class="actions">
+                <a href="rdp://${pc.ip}" class="btn btn-rdp">Prise en main (RDP)</a>
+                <a href="msra://${pc.ip}" class="btn btn-msra">Assister le collègue (MSRA)</a>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+
+    // Gestion des onglets
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        event.currentTarget.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+    }
+
+    // Génération et téléchargement dynamique du fichier .reg
+    function downloadRegFile() {
+        const regContent = `Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\\msra]
+@="URL:MSRA Protocol"
+"URL Protocol"=""
+
+[HKEY_CLASSES_ROOT\\msra\\shell]
+
+[HKEY_CLASSES_ROOT\\msra\\shell\\open]
+
+[HKEY_CLASSES_ROOT\\msra\\shell\\open\\command]
+@="powershell.exe -WindowStyle Hidden -Command \\"$ip = '%1' -replace 'msra://','' -replace '/',''; Start-Process msra.exe -ArgumentList '/offeringassist', $ip\\""`;
+
+        const blob = new Blob([regContent], { type: 'text/plain;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'installer_protocole_msra.reg';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>
