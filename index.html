@@ -15,6 +15,7 @@
             --accent-green: #059669;
             --accent-green-hover: #047857;
             --accent-purple: #7c3aed;
+            --accent-purple-hover: #6d28d9;
             --border-color: #334155;
             --code-bg: #090d16;
         }
@@ -43,12 +44,13 @@
         .ip { font-family: 'Courier New', Courier, monospace; color: #38bdf8; font-size: 0.9rem; margin-bottom: 1rem; background: rgba(56, 189, 248, 0.1); display: inline-block; padding: 0.2rem 0.5rem; border-radius: 4px; }
         .actions { display: flex; gap: 0.5rem; flex-direction: column; }
         
-        .btn { display: inline-block; text-align: center; padding: 0.65rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: 0.2s; border: none; }
+        .btn { display: inline-block; text-align: center; padding: 0.65rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: 0.2s; border: none; width: 100%; font-family: inherit; }
         .btn-rdp { background: var(--accent-blue); color: white; }
         .btn-rdp:hover { background: var(--accent-blue-hover); }
         .btn-msra { background: var(--accent-green); color: white; }
         .btn-msra:hover { background: var(--accent-green-hover); }
-        .btn-reg { background: var(--accent-purple); color: white; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; font-size: 0.95rem; margin-top: 0.5rem; }
+        .btn-reg { background: var(--accent-purple); color: white; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1.25rem; font-size: 0.95rem; margin-top: 0.5rem; width: auto; }
+        .btn-reg:hover { background: var(--accent-purple-hover); }
 
         /* Guide Section */
         .guide-section { background: var(--card-bg); border-radius: 8px; padding: 1.5rem; border: 1px solid var(--border-color); margin-bottom: 1.5rem; }
@@ -58,6 +60,11 @@
         pre { background: var(--code-bg); padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid var(--border-color); font-family: monospace; font-size: 0.85rem; color: #a7f3d0; overflow-x: auto; margin-bottom: 1rem; }
         ol, ul { margin-left: 1.25rem; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem; }
         li strong { color: var(--text-main); }
+        code { background: rgba(148, 163, 184, 0.15); padding: 0.15rem 0.4rem; border-radius: 3px; font-family: monospace; font-size: 0.85rem; color: #e2e8f0; }
+
+        /* Toast notification */
+        #toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(120%); background: var(--accent-green); color: white; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: transform 0.35s ease; z-index: 9999; }
+        #toast.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
@@ -69,8 +76,8 @@
     </header>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('dashboard')">💻 Postes de travail</button>
-        <button class="tab-btn" onclick="switchTab('config')">⚙️ Guide & Configuration</button>
+        <button class="tab-btn active" onclick="switchTab(event, 'dashboard')">💻 Postes de travail</button>
+        <button class="tab-btn" onclick="switchTab(event, 'config')">⚙️ Guide & Configuration</button>
     </div>
 
     <!-- ONGLET 1 : DASHBOARD -->
@@ -83,12 +90,22 @@
         
         <!-- STEP 1 -->
         <div class="guide-section">
-            <h2>1. Configuration de votre PC d'administration</h2>
+            <h2>1. Configuration de votre PC d'administration (MSRA)</h2>
             <p>Pour que le bouton <strong>Assister le collègue (MSRA)</strong> fonctionne depuis votre navigateur, vous devez déclarer le protocole <code>msra://</code> dans le registre de votre PC personnel/portatif.</p>
-            <button class="btn btn-reg" onclick="downloadRegFile()">
-                📥 Télécharger le fichier installer_protocole_msra.reg
+            <button class="btn btn-reg" onclick="downloadMsraRegFile()">
+                📥 Télécharger installer_protocole_msra.reg
             </button>
             <p style="margin-top:0.75rem; font-size:0.85rem;"><em>Note : Après le téléchargement, double-cliquez sur le fichier <code>.reg</code> et acceptez la fusion dans le registre.</em></p>
+        </div>
+
+        <!-- STEP 1bis -->
+        <div class="guide-section">
+            <h2>1bis. (Optionnel) Protocole <code>rdp://</code></h2>
+            <p>Le bouton <strong>Prise en main (RDP)</strong> télécharge un fichier <code>.rdp</code> qui s'ouvre automatiquement avec <em>mstsc.exe</em> — <strong>aucune configuration requise</strong>. Cette méthode est la plus fiable.</p>
+            <p>Si tu veux néanmoins un vrai lien <code>rdp://</code> (comme pour MSRA), télécharge et fusionne ce second fichier <code>.reg</code> sur le PC d'administration.</p>
+            <button class="btn btn-reg" onclick="downloadRdpRegFile()">
+                📥 Télécharger installer_protocole_rdp.reg
+            </button>
         </div>
 
         <!-- STEP 2 -->
@@ -106,7 +123,7 @@ Enable-NetFirewallRule -DisplayGroup "Assistance à distance"</pre>
         <div class="guide-section">
             <h2>3. Comment ça marche ?</h2>
             <ul>
-                <li><strong>Prise en main (RDP) :</strong> Ouvre une session complète. Idéal pour travailler sur le PC quand personne n'est devant (verrouille l'écran distant).</li>
+                <li><strong>Prise en main (RDP) :</strong> Télécharge un fichier <code>.rdp</code> → Windows ouvre une session complète via <em>mstsc.exe</em>. Idéal pour travailler sur le PC quand personne n'est devant (verrouille l'écran distant).</li>
                 <li><strong>Assister le collègue (MSRA) :</strong> Envoie une notification sur l'écran du collègue. Il clique sur <em>Autoriser</em> pour que vous puissiez voir son écran et l'aider sans lui couper sa session.</li>
             </ul>
         </div>
@@ -114,20 +131,26 @@ Enable-NetFirewallRule -DisplayGroup "Assistance à distance"</pre>
     </div>
 </div>
 
+<div id="toast"></div>
+
 <script>
-    // LISTE DES MACHINES (Modifiez les IP et Noms selon votre réseau local)
-    const machines = [,
-        { name: "POSTE8 : Comptoir 0", ip: "192.168.0.8" },
-        { name: "POSTE6 : Reception Commande", ip: "192.168.0.6" },
-        { name: "POSTE5 : Comptoir 4", ip: "192.168.0.5" },
-        { name: "POSTE4 : Comptoir 3", ip: "192.168.0.4" },
-        { name: "POSTE3 : Comptoir 2", ip: "192.168.0.3" },
-        { name: "POSTE2 : Comptoir 1", ip: "192.168.0.2" },
-        { name: "PC PDA : Robotikdose", ip: "192.168.0.229" },
-        { name: "PC Bureau Titulaire", ip: "192.168.0.18" }
+    // ============================================================
+    // LISTE DES MACHINES — Modifiez les IP et Noms selon votre LAN
+    // ============================================================
+    const machines = [
+        { name: "POSTE8 : Comptoir 0",        ip: "192.168.0.8"   },
+        { name: "POSTE6 : Reception Commande", ip: "192.168.0.6"   },
+        { name: "POSTE5 : Comptoir 4",        ip: "192.168.0.5"   },
+        { name: "POSTE4 : Comptoir 3",        ip: "192.168.0.4"   },
+        { name: "POSTE3 : Comptoir 2",        ip: "192.168.0.3"   },
+        { name: "POSTE2 : Comptoir 1",        ip: "192.168.0.2"   },
+        { name: "PC PDA : Robotikdose",       ip: "192.168.0.229" },
+        { name: "PC Bureau Titulaire",        ip: "192.168.0.18"  }
     ];
 
-    // Génération automatique des cartes
+    // ============================================================
+    // GÉNÉRATION DES CARTES
+    // ============================================================
     const container = document.getElementById('pc-list');
     machines.forEach(pc => {
         const card = document.createElement('div');
@@ -138,24 +161,81 @@ Enable-NetFirewallRule -DisplayGroup "Assistance à distance"</pre>
                 <span class="ip">${pc.ip}</span>
             </div>
             <div class="actions">
-                <a href="rdp://${pc.ip}" class="btn btn-rdp">Prise en main (RDP)</a>
+                <button class="btn btn-rdp" onclick="launchRDP('${pc.ip}')">Prise en main (RDP)</button>
                 <a href="msra://${pc.ip}" class="btn btn-msra">Assister le collègue (MSRA)</a>
             </div>
         `;
         container.appendChild(card);
     });
 
-    // Gestion des onglets
-    function switchTab(tabId) {
+    // ============================================================
+    // RDP — Télécharge un fichier .rdp qui ouvre mstsc.exe
+    // ============================================================
+    function launchRDP(ip) {
+        const rdpContent = [
+            `full address:s:${ip}`,
+            `prompt for credentials:i:1`,
+            `authentication level:i:2`,
+            `screen mode id:i:2`,
+            `desktopwidth:i:1920`,
+            `desktopheight:i:1080`,
+            `session bpp:i:32`,
+            `compression:i:1`,
+            `keyboardhook:i:2`,
+            `audiomode:i:0`,
+            `redirectclipboard:i:1`,
+            `redirectprinters:i:0`,
+            `redirectcomports:i:0`,
+            `redirectsmartcards:i:1`,
+            `displayconnectionbar:i:1`,
+            `disable wallpaper:i:0`,
+            `allow font smoothing:i:1`,
+            `allow desktop composition:i:1`,
+            `disable full window drag:i:1`,
+            `disable menu anims:i:1`,
+            `disable themes:i:0`,
+            `bitmapcachepersistenable:i:1`
+        ].join('\r\n');
+
+        const blob = new Blob([rdpContent], { type: 'application/x-rdp' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `connexion_${ip}.rdp`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+
+        showToast(`📡 Connexion RDP vers ${ip} en cours…`);
+    }
+
+    // ============================================================
+    // GESTION DES ONGLETS
+    // ============================================================
+    function switchTab(evt, tabId) {
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-        
-        event.currentTarget.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        evt.currentTarget.classList.add('active');
         document.getElementById(tabId).classList.add('active');
     }
 
-    // Génération et téléchargement dynamique du fichier .reg
-    function downloadRegFile() {
+    // ============================================================
+    // GÉNÉRATION DES FICHIERS .REG
+    // ============================================================
+    function triggerDownload(content, filename) {
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }
+
+    function downloadMsraRegFile() {
         const regContent = `Windows Registry Editor Version 5.00
 
 [HKEY_CLASSES_ROOT\\msra]
@@ -169,13 +249,38 @@ Enable-NetFirewallRule -DisplayGroup "Assistance à distance"</pre>
 [HKEY_CLASSES_ROOT\\msra\\shell\\open\\command]
 @="powershell.exe -WindowStyle Hidden -Command \\"$ip = '%1' -replace 'msra://','' -replace '/',''; Start-Process msra.exe -ArgumentList '/offeringassist', $ip\\""`;
 
-        const blob = new Blob([regContent], { type: 'text/plain;charset=utf-8' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = 'installer_protocole_msra.reg';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        triggerDownload(regContent, 'installer_protocole_msra.reg');
+        showToast('✅ Fichier msra.reg téléchargé — double-clic pour fusionner');
+    }
+
+    function downloadRdpRegFile() {
+        const regContent = `Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\\rdp]
+@="URL:RDP Protocol"
+"URL Protocol"=""
+
+[HKEY_CLASSES_ROOT\\rdp\\shell]
+
+[HKEY_CLASSES_ROOT\\rdp\\shell\\open]
+
+[HKEY_CLASSES_ROOT\\rdp\\shell\\open\\command]
+@="powershell.exe -WindowStyle Hidden -Command \\"$ip = '%1' -replace 'rdp://','' -replace '/',''; Start-Process mstsc.exe -ArgumentList '/v:', $ip\\""`;
+
+        triggerDownload(regContent, 'installer_protocole_rdp.reg');
+        showToast('✅ Fichier rdp.reg téléchargé — double-clic pour fusionner');
+    }
+
+    // ============================================================
+    // TOAST (notification bas d'écran)
+    // ============================================================
+    let toastTimeout = null;
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000);
     }
 </script>
 
