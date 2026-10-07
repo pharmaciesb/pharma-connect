@@ -116,11 +116,15 @@ Enable-NetFirewallRule -DisplayGroup "Assistance à distance"</pre>
 
 <script>
     // LISTE DES MACHINES (Modifiez les IP et Noms selon votre réseau local)
-    const machines = [
-        { name: "PC Compta / Caisse 1", ip: "192.168.1.10" },
-        { name: "PC Comptoir / Caisse 2", ip: "192.168.1.11" },
-        { name: "PC Robot / Automate", ip: "192.168.1.12" },
-        { name: "PC Bureau Titulaire", ip: "192.168.1.13" }
+    const machines = [,
+        { name: "POSTE8 : Comptoir 0", ip: "192.168.0.8" },
+        { name: "POSTE6 : Reception Commande", ip: "192.168.0.6" },
+        { name: "POSTE5 : Comptoir 4", ip: "192.168.0.5" },
+        { name: "POSTE4 : Comptoir 3", ip: "192.168.0.4" },
+        { name: "POSTE3 : Comptoir 2", ip: "192.168.0.3" },
+        { name: "POSTE2 : Comptoir 1", ip: "192.168.0.2" },
+        { name: "PC PDA : Robotikdose", ip: "192.168.0.229" },
+        { name: "PC Bureau Titulaire", ip: "192.168.0.18" }
     ];
 
     // Génération automatique des cartes
